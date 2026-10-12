@@ -1,4 +1,3 @@
-
 class GameController {
     constructor(startCallback, pauseCallback, resumeCallback) {
         this.state = 'MENU'; // MENU, PLAYING, PAUSED, RESULTS
@@ -52,7 +51,11 @@ class GameController {
     }
 
     resume() {
-        if(this.state === 'RESULTS') return;
+        // FIX: If starting fresh from the menu, trigger the spawn sequence first
+        if(this.state === 'MENU' && this.startCb) {
+            this.startCb();
+        }
+        
         this.state = 'PLAYING';
         this.pauseMenu.classList.add('hidden');
         if(this.resumeCb) this.resumeCb();
@@ -81,7 +84,8 @@ class GameController {
         
         document.getElementById('restart-btn').onclick = () => {
             this.resultsMenu.classList.add('hidden');
-            if(this.startCb) this.startCb();
+            // FIX: Reset state so resume() knows to spawn new targets for the next round
+            this.state = 'MENU'; 
             this.resume();
         };
     }
