@@ -7,8 +7,10 @@
     <link rel="stylesheet" href="main.css">
     <link rel="stylesheet" href="hud.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=JetBrains+Mono:wght@700&display=swap" rel="stylesheet">
+    
 </head>
 <body class="game-body">
+    
     <!-- UI Layer -->
     <div id="hud-layer">
         <div class="top-bar">
@@ -20,7 +22,6 @@
             <div class="stat-box">COMBO: <span id="combo-display">x1</span></div>
             <div id="fps-display" class="stat-box fps-counter">FPS: 60</div>
         </div>
-        <!-- Custom Crosshair Container -->
         <div id="game-crosshair"></div>
         <div id="hitmarker"></div>
     </div>
@@ -32,7 +33,7 @@
     <div id="pause-menu" class="modal-overlay">
         <div class="modal-content">
             <h2 id="pause-title">2D Training Ready</h2>
-            <p>Press <kbd>Space</kbd> or click Start to begin.</p>
+            <p>Press Space or click Start to begin.</p>
             <p>Press <kbd>ESC</kbd> or <kbd>P</kbd> to pause at any time.</p>
             <div class="btn-group">
                 <button id="resume-btn" class="btn primary-btn">Start Game</button>
@@ -58,8 +59,8 @@
         </div>
     </div>
 
-    <!-- Shared Settings Modal (Injected via JS or included statically) -->
-    <!-- (For brevity in generation, assume settings modal HTML is duplicated or dynamically loaded in a real prod app. We'll duplicate it here to ensure it works standalone.) -->
+    
+    <!-- Shared Settings Modal -->
     <div id="settings-overlay" class="modal-overlay hidden">
         <div class="modal-content settings-modal">
             <div class="modal-header">
@@ -68,15 +69,15 @@
             </div>
             
             <div class="settings-tabs">
-                <button class="tab-btn" data-tab="sens">Mouse & Sens</button>
-                <button class="tab-btn active" data-tab="crosshair">Crosshair</button>
-                <button class="tab-btn" data-tab="display">HUD & Display</button>
+                <button class="tab-btn active" data-tab="sens">Mouse & Sens</button>
+                <button class="tab-btn" data-tab="crosshair">Crosshair</button>
+                <button class="tab-btn" data-tab="display">HUD & Targets</button>
                 <button class="tab-btn" data-tab="audio">Audio</button>
             </div>
             
             <div class="tab-content-container">
-                 <!-- Sens Tab -->
-                 <div id="tab-sens" class="tab-pane">
+                <!-- Sens Tab -->
+                <div id="tab-sens" class="tab-pane active">
                     <div class="setting-group">
                         <label>Base Sensitivity (Multiplier)</label>
                         <div class="slider-group">
@@ -84,9 +85,19 @@
                             <input type="number" id="sens-input" min="0.1" max="10.0" step="0.01" value="1.0">
                         </div>
                     </div>
+                    <div class="setting-group">
+                        <label>Game Conversion Preset</label>
+                        <select id="sens-preset">
+                            <option value="raw">Raw Input</option>
+                            <option value="valorant">Valorant (Sens * 1.0)</option>
+                            <option value="cs2">CS2 / Apex (Sens * 3.18)</option>
+                            <option value="overwatch">Overwatch 2 (Sens * 10.60)</option>
+                        </select>
+                    </div>
                 </div>
+                
                 <!-- Crosshair Tab -->
-                <div id="tab-crosshair" class="tab-pane active">
+                <div id="tab-crosshair" class="tab-pane">
                     <div class="crosshair-preview-box">
                         <div id="crosshair-preview"></div>
                     </div>
@@ -120,6 +131,18 @@
                 <!-- Display Tab -->
                 <div id="tab-display" class="tab-pane">
                     <div class="setting-group">
+                        <label>Target Shape</label>
+                        <select id="target-shape">
+                            <option value="square">Squares / Cubes</option>
+                            <option value="circle">Circles / Spheres</option>
+                        </select>
+                    </div>
+                    <div class="setting-group checkbox-group">
+                        <input type="checkbox" id="show-target-hitboxes">
+                        <label for="show-target-hitboxes">Show Target Hitboxes (Red Outline)</label>
+                    </div>
+                    <hr style="border: 1px solid #333; margin: 15px 0;">
+                    <div class="setting-group">
                         <label>3D Field of View (FOV)</label>
                         <div class="slider-group">
                              <input type="range" id="fov-slider" min="60" max="120" value="90">
@@ -151,10 +174,7 @@
             </div>
         </div>
     </div>
-
-    <script src="settings.js"></script>
-    <script src="sound.js"></script>
-    <script src="pause.js"></script>
-    <script src="engine2d.js"></script>
+    
+    <script src="settings.js"></script><script src="sound.js"></script><script src="pause.js"></script><script src="engine2d.js"></script>
 </body>
 </html>

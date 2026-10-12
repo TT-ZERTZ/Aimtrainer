@@ -5,9 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AimTrainer.gg | Elite Aim Training</title>
     <link rel="stylesheet" href="main.css">
+    
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=JetBrains+Mono:wght@700&display=swap" rel="stylesheet">
+    
 </head>
 <body class="hub-body">
+    
     <div class="hub-container">
         <header class="hub-header">
             <h1 class="glitch" data-text="AIMTRAINER.GG">AIMTRAINER.GG</h1>
@@ -32,8 +35,9 @@
              <button id="open-settings-hub" class="btn primary-btn">Configure Settings</button>
         </div>
     </div>
+
     
-    <!-- Settings Modal Include -->
+    <!-- Shared Settings Modal -->
     <div id="settings-overlay" class="modal-overlay hidden">
         <div class="modal-content settings-modal">
             <div class="modal-header">
@@ -44,7 +48,7 @@
             <div class="settings-tabs">
                 <button class="tab-btn active" data-tab="sens">Mouse & Sens</button>
                 <button class="tab-btn" data-tab="crosshair">Crosshair</button>
-                <button class="tab-btn" data-tab="display">HUD & Display</button>
+                <button class="tab-btn" data-tab="display">HUD & Targets</button>
                 <button class="tab-btn" data-tab="audio">Audio</button>
             </div>
             
@@ -104,6 +108,18 @@
                 <!-- Display Tab -->
                 <div id="tab-display" class="tab-pane">
                     <div class="setting-group">
+                        <label>Target Shape</label>
+                        <select id="target-shape">
+                            <option value="square">Squares / Cubes</option>
+                            <option value="circle">Circles / Spheres</option>
+                        </select>
+                    </div>
+                    <div class="setting-group checkbox-group">
+                        <input type="checkbox" id="show-target-hitboxes">
+                        <label for="show-target-hitboxes">Show Target Hitboxes (Red Outline)</label>
+                    </div>
+                    <hr style="border: 1px solid #333; margin: 15px 0;">
+                    <div class="setting-group">
                         <label>3D Field of View (FOV)</label>
                         <div class="slider-group">
                              <input type="range" id="fov-slider" min="60" max="120" value="90">
@@ -136,10 +152,10 @@
         </div>
     </div>
     
+    
     <script src="settings.js"></script>
     <script src="sound.js"></script>
     <script>
-        // Hub specific logic
         document.getElementById('open-settings-hub').addEventListener('click', () => {
             document.getElementById('settings-overlay').classList.remove('hidden');
         });
@@ -148,5 +164,6 @@
             window.SettingsManager.saveSettings();
         });
     </script>
+
 </body>
 </html>
