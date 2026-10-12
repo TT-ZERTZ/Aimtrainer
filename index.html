@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AimTrainer.gg | Elite Aim Training</title>
+    <link rel="stylesheet" href="main.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=JetBrains+Mono:wght@700&display=swap" rel="stylesheet">
+</head>
+<body class="hub-body">
+    <div class="hub-container">
+        <header class="hub-header">
+            <h1 class="glitch" data-text="AIMTRAINER.GG">AIMTRAINER.GG</h1>
+            <p>Master your mechanics.</p>
+        </header>
+        
+        <main class="mode-selection">
+            <a href="2d.html" class="mode-card">
+                <div class="mode-icon">2D</div>
+                <h2>2D Reflex & Grid</h2>
+                <p>Warm up your wrists. Pure 2D canvas training for raw flick speed and click timing.</p>
+            </a>
+            
+            <a href="3d.html" class="mode-card">
+                <div class="mode-icon">3D</div>
+                <h2>3D FPS Arena</h2>
+                <p>First-person 3D environment. True-to-engine FOV and sensitivity scaling.</p>
+            </a>
+        </main>
+        
+        <div class="hub-footer">
+             <button id="open-settings-hub" class="btn primary-btn">Configure Settings</button>
+        </div>
+    </div>
+    
+    <!-- Settings Modal Include -->
+    <div id="settings-overlay" class="modal-overlay hidden">
+        <div class="modal-content settings-modal">
+            <div class="modal-header">
+                <h2>Game Settings</h2>
+                <button id="close-settings" class="close-btn">&times;</button>
+            </div>
+            
+            <div class="settings-tabs">
+                <button class="tab-btn active" data-tab="sens">Mouse & Sens</button>
+                <button class="tab-btn" data-tab="crosshair">Crosshair</button>
+                <button class="tab-btn" data-tab="display">HUD & Display</button>
+                <button class="tab-btn" data-tab="audio">Audio</button>
+            </div>
+            
+            <div class="tab-content-container">
+                <!-- Sens Tab -->
+                <div id="tab-sens" class="tab-pane active">
+                    <div class="setting-group">
+                        <label>Base Sensitivity (Multiplier)</label>
+                        <div class="slider-group">
+                            <input type="range" id="sens-slider" min="0.1" max="5.0" step="0.01" value="1.0">
+                            <input type="number" id="sens-input" min="0.1" max="10.0" step="0.01" value="1.0">
+                        </div>
+                    </div>
+                    <div class="setting-group">
+                        <label>Game Conversion Preset</label>
+                        <select id="sens-preset">
+                            <option value="raw">Raw Input</option>
+                            <option value="valorant">Valorant (Sens * 1.0)</option>
+                            <option value="cs2">CS2 / Apex (Sens * 3.18)</option>
+                            <option value="overwatch">Overwatch 2 (Sens * 10.60)</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <!-- Crosshair Tab -->
+                <div id="tab-crosshair" class="tab-pane">
+                    <div class="crosshair-preview-box">
+                        <div id="crosshair-preview"></div>
+                    </div>
+                    <div class="setting-group">
+                        <label>Style</label>
+                        <select id="xhair-style">
+                            <option value="cross">Classic Cross (+)</option>
+                            <option value="dot">Dot Only</option>
+                            <option value="circle">Circle</option>
+                            <option value="crossdot">Cross + Dot</option>
+                        </select>
+                    </div>
+                    <div class="setting-group">
+                        <label>Color</label>
+                        <input type="color" id="xhair-color" value="#00ffff">
+                    </div>
+                    <div class="setting-group">
+                        <label>Length</label>
+                        <input type="range" id="xhair-length" min="2" max="30" value="10">
+                    </div>
+                    <div class="setting-group">
+                        <label>Thickness</label>
+                        <input type="range" id="xhair-thickness" min="1" max="10" value="2">
+                    </div>
+                    <div class="setting-group">
+                        <label>Gap</label>
+                        <input type="range" id="xhair-gap" min="0" max="20" value="5">
+                    </div>
+                </div>
+                
+                <!-- Display Tab -->
+                <div id="tab-display" class="tab-pane">
+                    <div class="setting-group">
+                        <label>3D Field of View (FOV)</label>
+                        <div class="slider-group">
+                             <input type="range" id="fov-slider" min="60" max="120" value="90">
+                             <span id="fov-display">90</span>
+                        </div>
+                    </div>
+                     <div class="setting-group checkbox-group">
+                        <input type="checkbox" id="show-fps" checked>
+                        <label for="show-fps">Show FPS Counter</label>
+                    </div>
+                    <div class="setting-group checkbox-group">
+                        <input type="checkbox" id="show-hitmarker" checked>
+                        <label for="show-hitmarker">Show Hitmarker</label>
+                    </div>
+                </div>
+                
+                <!-- Audio Tab -->
+                <div id="tab-audio" class="tab-pane">
+                    <div class="setting-group">
+                        <label>Master Volume</label>
+                        <input type="range" id="vol-master" min="0" max="100" value="50">
+                    </div>
+                     <div class="setting-group">
+                        <label>Hit Sound (Ding)</label>
+                        <input type="range" id="vol-hit" min="0" max="100" value="80">
+                    </div>
+                    <button id="test-hit-sound" class="btn secondary-btn">Test Hit Sound</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="settings.js"></script>
+    <script src="sound.js"></script>
+    <script>
+        // Hub specific logic
+        document.getElementById('open-settings-hub').addEventListener('click', () => {
+            document.getElementById('settings-overlay').classList.remove('hidden');
+        });
+        document.getElementById('close-settings').addEventListener('click', () => {
+            document.getElementById('settings-overlay').classList.add('hidden');
+            window.SettingsManager.saveSettings();
+        });
+    </script>
+</body>
+</html>
