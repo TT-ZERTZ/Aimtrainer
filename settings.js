@@ -1,11 +1,10 @@
-
 class SettingsManager {
     constructor() {
         this.defaultSettings = {
             sens: 1.0, fov: 90,
             xhair: { style: 'cross', color: '#00ffff', length: 10, thickness: 2, gap: 5 },
             target: { shape: 'square', color: '#00f0ff', pattern: 'grid', size: 100, showHitboxes: false },
-            arena: { scale: 100, distance: 20, showGun: true },
+            arena: { scale: 100, distance: 20, gravity: 1200, showGun: true },
             display: { showFps: true, showHitmarker: true },
             audio: { master: 50, hit: 80 }
         };
@@ -20,6 +19,7 @@ class SettingsManager {
                 let parsed = JSON.parse(saved);
                 if(!parsed.target) parsed.target = { ...this.defaultSettings.target };
                 if(!parsed.arena) parsed.arena = { ...this.defaultSettings.arena };
+                if(parsed.arena.gravity === undefined) parsed.arena.gravity = 1200;
                 if(parsed.arena.showGun === undefined) parsed.arena.showGun = true;
                 return { ...this.defaultSettings, ...parsed }; 
             } catch(e) { console.error(e); }
@@ -33,6 +33,29 @@ class SettingsManager {
         window.dispatchEvent(new CustomEvent('settingsUpdated', { detail: this.current }));
     }
 
+    updateExportCode() {
+        const codeInput = document.getElementById('export-code-input');
+        if(codeInput) {
+            try {
+                const jsonStr = JSON.stringify(this.current);
+                codeInput.value = btoa(jsonStr);
+            } catch(e) { console.error(e); }
+        }
+    }
+
+    importLevelCode(code) {
+        try {
+            const jsonStr = atob(code.trim());
+            const parsed = JSON.parse(jsonStr);
+            if(parsed && parsed.target && parsed.arena) {
+                this.current = { ...this.defaultSettings, ...parsed };
+                this.saveSettings();
+                return true;
+            }
+        } catch(e) { console.error(e); }
+        return false;
+    }
+
     initDOM() {
         document.querySelectorAll('.tab-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
@@ -40,16 +63,49 @@ class SettingsManager {
                 document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
                 e.target.classList.add('active');
                 document.getElementById(`tab-${e.target.dataset.tab}`).classList.add('active');
+                if(e.target.dataset.tab === 'designer') {
+                    this.updateExportCode();
+                }
             });
         });
 
-        // Level Designer (Arena) binds
+        // Arena & Physics binds
         const aScale = document.getElementById('arena-scale'); const aScaleD = document.getElementById('arena-scale-display');
         if(aScale) { aScale.value = this.current.arena.scale; aScaleD.innerText = this.current.arena.scale + '%'; aScale.addEventListener('input', e => { aScaleD.innerText = e.target.value + '%'; this.current.arena.scale = parseInt(e.target.value); }); }
+        
         const aDist = document.getElementById('arena-dist'); const aDistD = document.getElementById('arena-dist-display');
         if(aDist) { aDist.value = this.current.arena.distance; aDistD.innerText = this.current.arena.distance + 'm'; aDist.addEventListener('input', e => { aDistD.innerText = e.target.value + 'm'; this.current.arena.distance = parseInt(e.target.value); }); }
+        
+        const aGrav = document.getElementById('arena-gravity'); const aGravD = document.getElementById('arena-gravity-display');
+        if(aGrav) { aGrav.value = this.current.arena.gravity; aGravD.innerText = this.current.arena.gravity; aGrav.addEventListener('input', e => { aGravD.innerText = e.target.value; this.current.arena.gravity = parseInt(e.target.value); }); }
+
         const aGun = document.getElementById('show-gun');
         if(aGun) { aGun.checked = this.current.arena.showGun; aGun.addEventListener('change', e => this.current.arena.showGun = e.target.checked); }
+
+        // Level Coder Copy / Load binds
+        const copyBtn = document.getElementById('copy-code-btn');
+        if(copyBtn) {
+            copyBtn.addEventListener('click', () => {
+                const codeInput = document.getElementById('export-code-input');
+                codeInput.select();
+                navigator.clipboard.writeText(codeInput.value);
+                copyBtn.innerText = 'Copied!';
+                setTimeout(() => copyBtn.innerText = 'Copy', 1500);
+            });
+        }
+
+        const loadBtn = document.getElementById('load-code-btn');
+        if(loadBtn) {
+            loadBtn.addEventListener('click', () => {
+                const val = document.getElementById('import-code-input').value;
+                if(this.importLevelCode(val)) {
+                    alert('Level code successfully loaded and applied!');
+                    document.getElementById('settings-overlay').classList.add('hidden');
+                } else {
+                    alert('Invalid level code format.');
+                }
+            });
+        }
 
         // Target Design binds
         const tShape = document.getElementById('target-shape'); if(tShape) { tShape.value = this.current.target.shape; tShape.addEventListener('change', e => this.current.target.shape = e.target.value); }
