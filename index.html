@@ -21,39 +21,39 @@
         </div>
         
         <main class="mode-selection">
+            <a href="editor.html" class="mode-card highlight-card">
+                <div class="mode-icon">🛠️ EDITOR</div>
+                <h2>Level Editor</h2>
+                <p>Build custom Gridshot target placements or configure Popcorn launch speeds & angles!</p>
+            </a>
+
             <a href="2d.html?mode=grid" class="mode-card">
                 <div class="mode-icon">2D GRID</div>
                 <h2>2D Reflex & Grid</h2>
-                <p>Warm up your wrists. Targets spawn in a fixed 8x8 possibility box on a 2D canvas.</p>
+                <p>Warm up your wrists. Targets spawn in custom grid spots on a 2D canvas.</p>
             </a>
 
             <a href="2d.html?mode=tracking" class="mode-card">
                 <div class="mode-icon">2D POPCORN</div>
                 <h2>2D Popcorn Tracking</h2>
-                <p>Multiple targets popping and bouncing with gravity like popcorn poppers.</p>
+                <p>Multiple bouncing targets with custom launch angles and velocities.</p>
             </a>
             
             <a href="3d.html?mode=grid" class="mode-card">
                 <div class="mode-icon">3D GRID</div>
                 <h2>3D Gridshot</h2>
-                <p>Standard 3D environment. Targets spawn on a custom 8x8 wall grid in front of you.</p>
+                <p>Standard 3D environment with custom target coordinates.</p>
             </a>
 
             <a href="3d.html?mode=tracking" class="mode-card">
                 <div class="mode-icon">3D POPCORN</div>
                 <h2>3D Popcorn Tracking</h2>
-                <p>Classic 3D popcorn tracking drill with bouncing spheres and gun recoil.</p>
-            </a>
-
-            <a href="3d.html?mode=360" class="mode-card">
-                <div class="mode-icon">360°</div>
-                <h2>3D 360 Flick</h2>
-                <p>Full awareness. Targets spawn all around you. Constant mouse movement required.</p>
+                <p>Customizable 3D popcorn physics, launch angles, and gravity.</p>
             </a>
         </main>
         
         <div class="hub-footer">
-             <button id="open-settings-hub" class="btn primary-btn">Settings & Level Coder</button>
+             <button id="open-settings-hub" class="btn secondary-btn">Settings</button>
         </div>
     </div>
 
@@ -61,7 +61,7 @@
     <div id="settings-overlay" class="modal-overlay hidden">
         <div class="modal-content settings-modal">
             <div class="modal-header">
-                <h2>Game Settings & Level Designer</h2>
+                <h2>Game Settings</h2>
                 <button id="close-settings" class="close-btn">&times;</button>
             </div>
             
@@ -69,14 +69,11 @@
                 <button class="tab-btn active" data-tab="sens">Mouse</button>
                 <button class="tab-btn" data-tab="crosshair">Crosshair</button>
                 <button class="tab-btn" data-tab="target">Target Design</button>
-                <button class="tab-btn" data-tab="arena">Arena / Physics</button>
-                <button class="tab-btn" data-tab="designer">Level Coder</button>
                 <button class="tab-btn" data-tab="display">Display</button>
                 <button class="tab-btn" data-tab="audio">Audio</button>
             </div>
             
             <div class="tab-content-container">
-                <!-- Sens Tab -->
                 <div id="tab-sens" class="tab-pane active">
                     <div class="setting-group">
                         <label>Base Sensitivity (Multiplier)</label>
@@ -87,147 +84,32 @@
                     </div>
                 </div>
                 
-                <!-- Crosshair Tab -->
                 <div id="tab-crosshair" class="tab-pane">
-                    <div class="crosshair-preview-box">
-                        <div id="crosshair-preview"></div>
-                    </div>
-                    <div class="setting-group">
-                        <label>Style</label>
-                        <select id="xhair-style">
-                            <option value="cross">Classic Cross (+)</option>
-                            <option value="dot">Dot Only</option>
-                            <option value="circle">Circle</option>
-                            <option value="crossdot">Cross + Dot</option>
-                        </select>
-                    </div>
-                    <div class="setting-group">
-                        <label>Color</label>
-                        <input type="color" id="xhair-color" value="#00ffff">
-                    </div>
-                    <div class="setting-group">
-                        <label>Length</label>
-                        <input type="range" id="xhair-length" min="2" max="30" value="10">
-                    </div>
-                    <div class="setting-group">
-                        <label>Thickness</label>
-                        <input type="range" id="xhair-thickness" min="1" max="10" value="2">
-                    </div>
-                    <div class="setting-group">
-                        <label>Gap</label>
-                        <input type="range" id="xhair-gap" min="0" max="20" value="5">
-                    </div>
+                    <div class="crosshair-preview-box"><div id="crosshair-preview"></div></div>
+                    <div class="setting-group"><label>Style</label><select id="xhair-style"><option value="cross">Classic Cross (+)</option><option value="dot">Dot Only</option><option value="circle">Circle</option><option value="crossdot">Cross + Dot</option></select></div>
+                    <div class="setting-group"><label>Color</label><input type="color" id="xhair-color" value="#00ffff"></div>
+                    <div class="setting-group"><label>Length</label><input type="range" id="xhair-length" min="2" max="30" value="10"></div>
+                    <div class="setting-group"><label>Thickness</label><input type="range" id="xhair-thickness" min="1" max="10" value="2"></div>
+                    <div class="setting-group"><label>Gap</label><input type="range" id="xhair-gap" min="0" max="20" value="5"></div>
                 </div>
 
-                <!-- Target Design Tab -->
                 <div id="tab-target" class="tab-pane">
-                    <div class="setting-group">
-                        <label>Target Shape</label>
-                        <select id="target-shape">
-                            <option value="square">Squares / Cubes</option>
-                            <option value="circle">Circles / Spheres</option>
-                        </select>
-                    </div>
-                    <div class="setting-group">
-                        <label>Target Pattern / Texture</label>
-                        <select id="target-pattern">
-                            <option value="grid">Grid Design (Default)</option>
-                            <option value="solid">Solid Color</option>
-                        </select>
-                    </div>
-                    <div class="setting-group">
-                        <label>Target Color</label>
-                        <input type="color" id="target-color" value="#00f0ff">
-                    </div>
-                    <div class="setting-group">
-                        <label>Target Size (%)</label>
-                        <div class="slider-group">
-                            <input type="range" id="target-size" min="30" max="150" value="100">
-                            <span id="target-size-display">100%</span>
-                        </div>
-                    </div>
-                    <div class="setting-group checkbox-group">
-                        <input type="checkbox" id="show-target-hitboxes">
-                        <label for="show-target-hitboxes">Show Hitboxes (Red Outline)</label>
-                    </div>
-                </div>
-
-                <!-- Arena Level Designer Tab -->
-                <div id="tab-arena" class="tab-pane">
-                    <div class="setting-group">
-                        <label>Possibox Size / Scale (%)</label>
-                        <div class="slider-group">
-                            <input type="range" id="arena-scale" min="40" max="150" value="100">
-                            <span id="arena-scale-display">100%</span>
-                        </div>
-                    </div>
-                    <div class="setting-group">
-                        <label>Target Distance (3D Only)</label>
-                        <div class="slider-group">
-                            <input type="range" id="arena-dist" min="10" max="50" value="20">
-                            <span id="arena-dist-display">20m</span>
-                        </div>
-                    </div>
-                    <div class="setting-group">
-                        <label>Gravity / Popcorn Bounce Force</label>
-                        <div class="slider-group">
-                            <input type="range" id="arena-gravity" min="500" max="2500" step="100" value="1200">
-                            <span id="arena-gravity-display">1200</span>
-                        </div>
-                    </div>
-                    <div class="setting-group checkbox-group">
-                        <input type="checkbox" id="show-gun" checked>
-                        <label for="show-gun">Show 3D Gun Model</label>
-                    </div>
-                </div>
-
-                <!-- Level Coder Tab -->
-                <div id="tab-designer" class="tab-pane">
-                    <div class="setting-group">
-                        <label>Export Custom Level Code (Base64 JSON)</label>
-                        <div style="display: flex; gap: 10px;">
-                            <input type="text" id="export-code-input" readonly style="flex: 1; padding: 8px; background: #222; border: 1px solid #444; color: #00f0ff; font-family: monospace; border-radius: 4px;">
-                            <button id="copy-code-btn" class="btn primary-btn" style="padding: 8px 15px;">Copy</button>
-                        </div>
-                        <p style="font-size: 0.8rem; color: #888; margin-top: 5px;">Share this code with friends so they can play your exact level setup!</p>
-                    </div>
-                    <hr style="border: 1px solid #333; margin: 20px 0;">
-                    <div class="setting-group">
-                        <label>Import Level Code (Paste Base64 JSON)</label>
-                        <textarea id="import-code-input" placeholder="Paste Base64 level code here..." style="width: 100%; height: 70px; padding: 8px; background: #222; border: 1px solid #444; color: white; font-family: monospace; border-radius: 4px; resize: none;"></textarea>
-                        <button id="load-code-btn" class="btn primary-btn" style="margin-top: 10px; width: 100%;">Load & Play Level Code</button>
-                    </div>
+                    <div class="setting-group"><label>Target Shape</label><select id="target-shape"><option value="square">Squares / Cubes</option><option value="circle">Circles / Spheres</option></select></div>
+                    <div class="setting-group"><label>Target Pattern / Texture</label><select id="target-pattern"><option value="grid">Grid Design (Default)</option><option value="solid">Solid Color</option></select></div>
+                    <div class="setting-group"><label>Target Color</label><input type="color" id="target-color" value="#00f0ff"></div>
+                    <div class="setting-group"><label>Target Size (%)</label><div class="slider-group"><input type="range" id="target-size" min="30" max="150" value="100"><span id="target-size-display">100%</span></div></div>
+                    <div class="setting-group checkbox-group"><input type="checkbox" id="show-target-hitboxes"><label for="show-target-hitboxes">Show Hitboxes (Red Outline)</label></div>
                 </div>
                 
-                <!-- Display Tab -->
                 <div id="tab-display" class="tab-pane">
-                    <div class="setting-group">
-                        <label>3D Field of View (FOV)</label>
-                        <div class="slider-group">
-                             <input type="range" id="fov-slider" min="60" max="120" value="90">
-                             <span id="fov-display">90</span>
-                        </div>
-                    </div>
-                     <div class="setting-group checkbox-group">
-                        <input type="checkbox" id="show-fps" checked>
-                        <label for="show-fps">Show FPS Counter</label>
-                    </div>
-                    <div class="setting-group checkbox-group">
-                        <input type="checkbox" id="show-hitmarker" checked>
-                        <label for="show-hitmarker">Show Hitmarker</label>
-                    </div>
+                    <div class="setting-group"><label>3D Field of View (FOV)</label><div class="slider-group"><input type="range" id="fov-slider" min="60" max="120" value="90"><span id="fov-display">90</span></div></div>
+                    <div class="setting-group checkbox-group"><input type="checkbox" id="show-fps" checked><label for="show-fps">Show FPS Counter</label></div>
+                    <div class="setting-group checkbox-group"><input type="checkbox" id="show-hitmarker" checked><label for="show-hitmarker">Show Hitmarker</label></div>
                 </div>
                 
-                <!-- Audio Tab -->
                 <div id="tab-audio" class="tab-pane">
-                    <div class="setting-group">
-                        <label>Master Volume</label>
-                        <input type="range" id="vol-master" min="0" max="100" value="50">
-                    </div>
-                     <div class="setting-group">
-                        <label>Hit Sound (Ding)</label>
-                        <input type="range" id="vol-hit" min="0" max="100" value="80">
-                    </div>
+                    <div class="setting-group"><label>Master Volume</label><input type="range" id="vol-master" min="0" max="100" value="50"></div>
+                    <div class="setting-group"><label>Hit Sound (Ding)</label><input type="range" id="vol-hit" min="0" max="100" value="80"></div>
                 </div>
             </div>
         </div>
@@ -238,7 +120,6 @@
     <script>
         document.getElementById('open-settings-hub').addEventListener('click', () => {
             document.getElementById('settings-overlay').classList.remove('hidden');
-            window.SettingsManager.updateExportCode();
         });
         document.getElementById('close-settings').addEventListener('click', () => {
             document.getElementById('settings-overlay').classList.add('hidden');
