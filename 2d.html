@@ -69,9 +69,10 @@
             </div>
             
             <div class="settings-tabs">
-                <button class="tab-btn active" data-tab="sens">Mouse & Sens</button>
+                <button class="tab-btn active" data-tab="sens">Mouse</button>
                 <button class="tab-btn" data-tab="crosshair">Crosshair</button>
-                <button class="tab-btn" data-tab="display">HUD & Targets</button>
+                <button class="tab-btn" data-tab="target">Target Design</button>
+                <button class="tab-btn" data-tab="display">Display</button>
                 <button class="tab-btn" data-tab="audio">Audio</button>
             </div>
             
@@ -127,9 +128,9 @@
                         <input type="range" id="xhair-gap" min="0" max="20" value="5">
                     </div>
                 </div>
-                
-                <!-- Display Tab -->
-                <div id="tab-display" class="tab-pane">
+
+                <!-- Target Design Tab -->
+                <div id="tab-target" class="tab-pane">
                     <div class="setting-group">
                         <label>Target Shape</label>
                         <select id="target-shape">
@@ -137,11 +138,32 @@
                             <option value="circle">Circles / Spheres</option>
                         </select>
                     </div>
+                    <div class="setting-group">
+                        <label>Target Pattern / Texture</label>
+                        <select id="target-pattern">
+                            <option value="grid">Grid Design (Default)</option>
+                            <option value="solid">Solid Color</option>
+                        </select>
+                    </div>
+                    <div class="setting-group">
+                        <label>Target Color</label>
+                        <input type="color" id="target-color" value="#00f0ff">
+                    </div>
+                    <div class="setting-group">
+                        <label>Target Size (%)</label>
+                        <div class="slider-group">
+                            <input type="range" id="target-size" min="50" max="150" value="100">
+                            <span id="target-size-display">100%</span>
+                        </div>
+                    </div>
                     <div class="setting-group checkbox-group">
                         <input type="checkbox" id="show-target-hitboxes">
-                        <label for="show-target-hitboxes">Show Target Hitboxes (Red Outline)</label>
+                        <label for="show-target-hitboxes">Show Hitboxes (Red Outline)</label>
                     </div>
-                    <hr style="border: 1px solid #333; margin: 15px 0;">
+                </div>
+                
+                <!-- Display Tab -->
+                <div id="tab-display" class="tab-pane">
                     <div class="setting-group">
                         <label>3D Field of View (FOV)</label>
                         <div class="slider-group">

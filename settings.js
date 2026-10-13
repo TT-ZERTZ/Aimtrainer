@@ -5,12 +5,14 @@ class SettingsManager {
             sens: 1.0,
             fov: 90,
             xhair: { style: 'cross', color: '#00ffff', length: 10, thickness: 2, gap: 5 },
-            display: {
-                showFps: true,
-                showHitmarker: true,
-                targetShape: 'square', // default to square now
-                showHitboxes: false
+            target: { 
+                shape: 'square', 
+                color: '#00f0ff', 
+                pattern: 'grid', 
+                size: 100, 
+                showHitboxes: false 
             },
+            display: { showFps: true, showHitmarker: true },
             audio: { master: 50, hit: 80 }
         };
         this.current = this.loadSettings();
@@ -22,12 +24,14 @@ class SettingsManager {
         if (saved) {
             try { 
                 let parsed = JSON.parse(saved);
-                // ensure new variables exist for returning users
-                if(!parsed.display.targetShape) parsed.display.targetShape = 'square';
-                if(parsed.display.showHitboxes === undefined) parsed.display.showHitboxes = false;
+                // migration for old saves
+                if(!parsed.target) {
+                    parsed.target = { ...this.defaultSettings.target };
+                    if(parsed.display.targetShape) parsed.target.shape = parsed.display.targetShape;
+                    if(parsed.display.showHitboxes !== undefined) parsed.target.showHitboxes = parsed.display.showHitboxes;
+                }
                 return { ...this.defaultSettings, ...parsed }; 
-            }
-            catch(e) { console.error(e); }
+            } catch(e) { console.error(e); }
         }
         return { ...this.defaultSettings };
     }
@@ -48,32 +52,44 @@ class SettingsManager {
             });
         });
 
-        // Shape/Hitboxes
-        const shapeSelect = document.getElementById('target-shape');
-        if(shapeSelect) {
-            shapeSelect.value = this.current.display.targetShape;
-            shapeSelect.addEventListener('change', e => { this.current.display.targetShape = e.target.value; });
+        // Target Design binds
+        const tShape = document.getElementById('target-shape');
+        if(tShape) { tShape.value = this.current.target.shape; tShape.addEventListener('change', e => this.current.target.shape = e.target.value); }
+        
+        const tPattern = document.getElementById('target-pattern');
+        if(tPattern) { tPattern.value = this.current.target.pattern; tPattern.addEventListener('change', e => this.current.target.pattern = e.target.value); }
+        
+        const tColor = document.getElementById('target-color');
+        if(tColor) { tColor.value = this.current.target.color; tColor.addEventListener('input', e => this.current.target.color = e.target.value); }
+        
+        const tSize = document.getElementById('target-size');
+        const tSizeDisp = document.getElementById('target-size-display');
+        if(tSize && tSizeDisp) {
+            tSize.value = this.current.target.size; tSizeDisp.innerText = this.current.target.size + '%';
+            tSize.addEventListener('input', e => { tSizeDisp.innerText = e.target.value + '%'; this.current.target.size = parseInt(e.target.value); });
         }
+        
+        const tHitboxes = document.getElementById('show-target-hitboxes');
+        if(tHitboxes) { tHitboxes.checked = this.current.target.showHitboxes; tHitboxes.addEventListener('change', e => this.current.target.showHitboxes = e.target.checked); }
 
-        ['show-fps', 'show-hitmarker', 'show-target-hitboxes'].forEach(id => {
+        // Display binds
+        ['show-fps', 'show-hitmarker'].forEach(id => {
             const el = document.getElementById(id);
             if(el) {
-                const key = id === 'show-fps' ? 'showFps' : (id === 'show-hitmarker' ? 'showHitmarker' : 'showHitboxes');
+                const key = id === 'show-fps' ? 'showFps' : 'showHitmarker';
                 el.checked = this.current.display[key];
                 el.addEventListener('change', e => { this.current.display[key] = e.target.checked; });
             }
         });
 
-        // Sens
-        const sSlider = document.getElementById('sens-slider');
-        const sInput = document.getElementById('sens-input');
+        // Sens, Crosshair, FOV, Audio binds (standard)
+        const sSlider = document.getElementById('sens-slider'); const sInput = document.getElementById('sens-input');
         if(sSlider && sInput) {
             sSlider.value = this.current.sens; sInput.value = this.current.sens;
             sSlider.addEventListener('input', e => { sInput.value = e.target.value; this.current.sens = parseFloat(e.target.value); });
             sInput.addEventListener('change', e => { sSlider.value = e.target.value; this.current.sens = parseFloat(e.target.value); });
         }
 
-        // Crosshair
         ['style', 'color', 'length', 'thickness', 'gap'].forEach(key => {
             const el = document.getElementById(`xhair-${key}`);
             if(el) {
@@ -85,15 +101,12 @@ class SettingsManager {
             }
         });
 
-        // FOV
-        const fovSlider = document.getElementById('fov-slider');
-        const fovDisplay = document.getElementById('fov-display');
+        const fovSlider = document.getElementById('fov-slider'); const fovDisplay = document.getElementById('fov-display');
         if(fovSlider && fovDisplay) {
             fovSlider.value = this.current.fov; fovDisplay.innerText = this.current.fov;
             fovSlider.addEventListener('input', e => { fovDisplay.innerText = e.target.value; this.current.fov = parseInt(e.target.value); });
         }
         
-        // Audio
         ['master', 'hit'].forEach(key => {
             const el = document.getElementById(`vol-${key}`);
             if(el) {
@@ -144,7 +157,6 @@ class SettingsManager {
                 container.appendChild(circ);
             }
         };
-
         styleCrosshair(document.getElementById('crosshair-preview'));
         styleCrosshair(document.getElementById('game-crosshair'));
     }

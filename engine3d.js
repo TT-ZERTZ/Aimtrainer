@@ -1,8 +1,8 @@
 
 let scene, camera, renderer, raycaster;
 let targets = [];
-const TARGET_RADIUS = 2;
-const MAX_TARGETS = 3;
+let targetMaterial = null; 
+let possiBoxHelper = null;
 
 let score = 0, hits = 0, misses = 0;
 let timeLeft = 60.0;
@@ -19,15 +19,34 @@ const uiAcc = document.getElementById('acc-display');
 const hitmarker = document.getElementById('hitmarker');
 const titleEl = document.getElementById('pause-title');
 
-if (titleEl) {
-    titleEl.innerText = mode === '360' ? '3D 360° Flick Ready' : '3D Gridshot Ready';
-}
+if (titleEl) { titleEl.innerText = mode === '360' ? '3D 360° Flick Ready' : '3D Gridshot Ready'; }
 
 let isLocked = false;
 document.addEventListener('pointerlockchange', () => {
     isLocked = document.pointerLockElement === document.body;
     if (!isLocked && isPlaying) gameController.pause();
 });
+
+// Create Texture for "Grid" Pattern Targets
+function getTargetMaterial(ts) {
+    let matArgs = { color: ts.color, emissive: 0x000000, shininess: 80 };
+    
+    if (ts.pattern === 'grid') {
+        const c = document.createElement('canvas');
+        c.width = 128; c.height = 128;
+        const ctx = c.getContext('2d');
+        ctx.fillStyle = ts.color; ctx.fillRect(0,0,128,128);
+        ctx.strokeStyle = '#000000'; ctx.lineWidth = 12;
+        ctx.strokeRect(0,0,128,128);
+        ctx.beginPath(); ctx.moveTo(64,0); ctx.lineTo(64,128); ctx.moveTo(0,64); ctx.lineTo(128,64); ctx.stroke();
+        
+        const tex = new THREE.CanvasTexture(c);
+        matArgs.map = tex;
+        matArgs.color = 0xffffff; // Reset base color so texture color shows perfectly
+    }
+    
+    return new THREE.MeshPhongMaterial(matArgs);
+}
 
 function init3D() {
     scene = new THREE.Scene();
@@ -45,8 +64,12 @@ function init3D() {
     dirLight.position.set(10, 20, 10);
     scene.add(dirLight);
 
+    // Floor grid
     scene.add(new THREE.GridHelper(100, 50, 0x00f0ff, 0x222222));
+    
     raycaster = new THREE.Raycaster();
+    
+    buildPossiBox();
 
     window.addEventListener('resize', () => {
         camera.aspect = window.innerWidth / window.innerHeight;
@@ -92,83 +115,87 @@ function init3D() {
         camera.fov = e.detail.fov;
         camera.updateProjectionMatrix();
         
+        targetMaterial = getTargetMaterial(e.detail.target);
+        
         if (isPlaying || timeLeft > 0) {
             targets.forEach(t => scene.remove(t));
             targets = [];
-            for(let i=0; i<MAX_TARGETS; i++) spawnTarget3D();
+            for(let i=0; i<3; i++) spawnTarget3D();
         }
     });
+    
+    targetMaterial = getTargetMaterial(window.SettingsManager.current.target);
+}
+
+function buildPossiBox() {
+    if(mode !== 'grid') return;
+    if(possiBoxHelper) scene.remove(possiBoxHelper);
+    
+    // Tightened box math
+    const spacing = 2.4;
+    const wallDist = 20; 
+    
+    possiBoxHelper = new THREE.GridHelper(spacing * 8, 8, 0x444444, 0x222222);
+    possiBoxHelper.rotation.x = Math.PI / 2;
+    // Align exactly with target spawn centers. Y=5 is eye level.
+    possiBoxHelper.position.set(0, 5, -wallDist - 0.1); 
+    scene.add(possiBoxHelper);
 }
 
 function spawnTarget3D() {
-    const shape = window.SettingsManager.current.display.targetShape;
-    const showHitboxes = window.SettingsManager.current.display.showHitboxes;
+    const ts = window.SettingsManager.current.target;
+    // Calculate radius based on custom size %
+    const r = 1.0 * (ts.size / 100);
 
     let geometry;
-    if (shape === 'square') {
-        geometry = new THREE.BoxGeometry(TARGET_RADIUS*2, TARGET_RADIUS*2, TARGET_RADIUS*2);
-    } else {
-        geometry = new THREE.SphereGeometry(TARGET_RADIUS, 32, 32);
-    }
+    if (ts.shape === 'square') geometry = new THREE.BoxGeometry(r*2, r*2, r*2);
+    else geometry = new THREE.SphereGeometry(r, 32, 32);
 
-    const material = new THREE.MeshPhongMaterial({ color: 0x00f0ff, emissive: 0x004455, shininess: 100 });
-    const mesh = new THREE.Mesh(geometry, material);
+    const mesh = new THREE.Mesh(geometry, targetMaterial);
     
-    if (showHitboxes) {
-        const hbGeo = new THREE.BoxGeometry(TARGET_RADIUS*2.1, TARGET_RADIUS*2.1, TARGET_RADIUS*2.1);
+    if (ts.showHitboxes) {
+        const hbGeo = new THREE.BoxGeometry(r*2.1, r*2.1, r*2.1);
         const edges = new THREE.EdgesGeometry(hbGeo);
         const line = new THREE.LineSegments(edges, new THREE.LineBasicMaterial({ color: 0xff0000 }));
         mesh.add(line);
     }
     
     if (mode === '360') {
-        // Spawn 360 degrees around the player
         const dist = 15 + Math.random() * 20;
         const angleX = Math.random() * Math.PI * 2; 
-        const angleY = (Math.random() - 0.2) * Math.PI * 0.5; // Wider vertical range
+        const angleY = (Math.random() - 0.2) * Math.PI * 0.5; 
         
         mesh.position.x = Math.sin(angleX) * dist;
         mesh.position.y = 5 + Math.sin(angleY) * dist;
         mesh.position.z = -Math.cos(angleX) * dist;
-        
-        if (shape === 'square') {
-            mesh.lookAt(camera.position); // Cubes look better pointing at player in 360
-        }
+        if (ts.shape === 'square') mesh.lookAt(camera.position); 
     } else {
-        // True 8x8 Grid Mode (64 fixed positions) like SteelSeries 3D Aim Trainer
-        const cols = 8;
-        const rows = 8;
-        const spacing = 3.5; 
-        const wallDist = 25; 
+        // Tight 8x8 Grid Mode
+        const cols = 8; const rows = 8;
+        const spacing = 2.4; 
+        const wallDist = 20; 
         
-        let validSpot = false;
-        let col = 0, row = 0;
-        let attempts = 0;
+        let validSpot = false; let col = 0, row = 0; let attempts = 0;
         
-        // Find an empty spot on the grid
         while(!validSpot && attempts < 50) {
             col = Math.floor(Math.random() * cols);
             row = Math.floor(Math.random() * rows);
             validSpot = true;
             
             const testX = (col - 3.5) * spacing;
-            const testY = 3.5 + row * spacing;
+            const testY = 5 + (row - 3.5) * spacing;
             
             for(let t of targets) {
                 if (Math.abs(t.position.x - testX) < 0.1 && Math.abs(t.position.y - testY) < 0.1) {
-                    validSpot = false; 
-                    break;
+                    validSpot = false; break;
                 }
             }
             attempts++;
         }
         
         mesh.position.x = (col - 3.5) * spacing;
-        // Floor is at y=0, eye level is y=5. Starting at 3.5 keeps bottom row off the floor.
-        mesh.position.y = 3.5 + row * spacing; 
+        mesh.position.y = 5 + (row - 3.5) * spacing; 
         mesh.position.z = -wallDist;
-        
-        // Force square to be perfectly flat against the invisible wall
         mesh.rotation.set(0, 0, 0); 
     }
 
@@ -184,7 +211,7 @@ function updateStatsUI() {
 function startGame3D() {
     score = 0; hits = 0; misses = 0; timeLeft = 60.0;
     targets.forEach(t => scene.remove(t)); targets = [];
-    for(let i=0; i<MAX_TARGETS; i++) spawnTarget3D();
+    for(let i=0; i<3; i++) spawnTarget3D();
     updateStatsUI();
 }
 
