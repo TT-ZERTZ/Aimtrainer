@@ -20,7 +20,10 @@ class GameController {
         
         const setBtn = document.getElementById('open-settings-game');
         const closeSetBtn = document.getElementById('close-settings');
-        if(setBtn) setBtn.addEventListener('click', () => this.settingsMenu.classList.remove('hidden'));
+        if(setBtn) setBtn.addEventListener('click', () => { 
+            this.settingsMenu.classList.remove('hidden'); 
+            document.body.style.cursor = 'default'; // Force cursor visible
+        });
         if(closeSetBtn) closeSetBtn.addEventListener('click', () => {
             this.settingsMenu.classList.add('hidden');
             window.SettingsManager.saveSettings();
@@ -52,18 +55,19 @@ class GameController {
         this.pauseMenu.classList.remove('hidden');
         document.getElementById('pause-title').innerText = "PAUSED";
         document.getElementById('resume-btn').innerText = "Resume";
+        document.body.style.cursor = 'default'; // MUST HAVE THIS BUG FIX
         if(this.pauseCb) this.pauseCb();
     }
 
     showResults(stats) {
         this.state = 'RESULTS';
+        document.body.style.cursor = 'default'; // Ensure cursor visibility on results screen
         if(this.pauseCb) this.pauseCb();
         
         document.getElementById('res-score').innerText = stats.score;
         document.getElementById('res-acc').innerText = `${stats.acc}%`;
         document.getElementById('res-hits').innerText = stats.hits;
         document.getElementById('res-miss').innerText = stats.misses;
-        if(document.getElementById('res-combo')) document.getElementById('res-combo').innerText = stats.maxCombo;
         
         this.resultsMenu.classList.remove('hidden');
         document.getElementById('restart-btn').onclick = () => {

@@ -3,15 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>2D Gridshot - AimTrainer.gg</title>
+    <title>2D Engine - AimTrainer.gg</title>
     <link rel="stylesheet" href="main.css">
     <link rel="stylesheet" href="hud.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=JetBrains+Mono:wght@700&display=swap" rel="stylesheet">
-    
 </head>
 <body class="game-body">
-    
-    <!-- UI Layer -->
     <div id="hud-layer">
         <div class="top-bar">
             <div class="stat-box">TIME: <span id="time-display">60.0</span></div>
@@ -19,21 +16,18 @@
         </div>
         <div class="side-stats">
             <div class="stat-box">ACC: <span id="acc-display">100</span>%</div>
-            <div class="stat-box">COMBO: <span id="combo-display">x1</span></div>
+            <div class="stat-box" id="combo-container">COMBO: <span id="combo-display">x1</span></div>
             <div id="fps-display" class="stat-box fps-counter">FPS: 60</div>
         </div>
         <div id="game-crosshair"></div>
         <div id="hitmarker"></div>
     </div>
-
-    <!-- Game Canvas -->
     <canvas id="game-canvas-2d"></canvas>
 
-    <!-- Paused / Start Overlay -->
     <div id="pause-menu" class="modal-overlay">
         <div class="modal-content">
             <h2 id="pause-title">2D Training Ready</h2>
-            <p>Press Space or click Start to begin.</p>
+            <p>Press <kbd>Space</kbd> or click Start to begin.</p>
             <p>Press <kbd>ESC</kbd> or <kbd>P</kbd> to pause at any time.</p>
             <div class="btn-group">
                 <button id="resume-btn" class="btn primary-btn">Start Game</button>
@@ -43,7 +37,6 @@
         </div>
     </div>
 
-    <!-- Results Modal -->
     <div id="results-menu" class="modal-overlay hidden">
         <div class="modal-content results-modal">
             <h2>ROUND COMPLETE</h2>
@@ -52,14 +45,12 @@
                 <div class="result-item"><span>Accuracy</span><span id="res-acc">0%</span></div>
                 <div class="result-item"><span>Hits</span><span id="res-hits">0</span></div>
                 <div class="result-item"><span>Misses</span><span id="res-miss">0</span></div>
-                <div class="result-item"><span>Max Combo</span><span id="res-combo">0</span></div>
             </div>
             <button id="restart-btn" class="btn primary-btn">Play Again</button>
             <a href="index.html" class="btn secondary-btn">Back to Hub</a>
         </div>
     </div>
 
-    
     <!-- Shared Settings Modal -->
     <div id="settings-overlay" class="modal-overlay hidden">
         <div class="modal-content settings-modal">
@@ -72,6 +63,7 @@
                 <button class="tab-btn active" data-tab="sens">Mouse</button>
                 <button class="tab-btn" data-tab="crosshair">Crosshair</button>
                 <button class="tab-btn" data-tab="target">Target Design</button>
+                <button class="tab-btn" data-tab="arena">Level / Arena</button>
                 <button class="tab-btn" data-tab="display">Display</button>
                 <button class="tab-btn" data-tab="audio">Audio</button>
             </div>
@@ -152,13 +144,37 @@
                     <div class="setting-group">
                         <label>Target Size (%)</label>
                         <div class="slider-group">
-                            <input type="range" id="target-size" min="50" max="150" value="100">
+                            <input type="range" id="target-size" min="30" max="150" value="100">
                             <span id="target-size-display">100%</span>
                         </div>
                     </div>
                     <div class="setting-group checkbox-group">
                         <input type="checkbox" id="show-target-hitboxes">
                         <label for="show-target-hitboxes">Show Hitboxes (Red Outline)</label>
+                    </div>
+                </div>
+
+                <!-- Arena Level Designer Tab -->
+                <div id="tab-arena" class="tab-pane">
+                    <div class="setting-group">
+                        <label>Possibox Size / Scale (%)</label>
+                        <div class="slider-group">
+                            <input type="range" id="arena-scale" min="40" max="150" value="100">
+                            <span id="arena-scale-display">100%</span>
+                        </div>
+                        <p style="font-size: 0.8rem; color: #888; margin-top: 5px;">Scales the 8x8 spawning grid bounds (2D & 3D).</p>
+                    </div>
+                    <div class="setting-group">
+                        <label>Target Distance (3D Only)</label>
+                        <div class="slider-group">
+                            <input type="range" id="arena-dist" min="10" max="50" value="20">
+                            <span id="arena-dist-display">20m</span>
+                        </div>
+                        <p style="font-size: 0.8rem; color: #888; margin-top: 5px;">How far away the spawning wall is pushed.</p>
+                    </div>
+                    <div class="setting-group checkbox-group">
+                        <input type="checkbox" id="show-gun" checked>
+                        <label for="show-gun">Show 3D Gun Model</label>
                     </div>
                 </div>
                 
@@ -196,7 +212,7 @@
             </div>
         </div>
     </div>
-    
+
     <script src="settings.js"></script><script src="sound.js"></script><script src="pause.js"></script><script src="engine2d.js"></script>
 </body>
 </html>

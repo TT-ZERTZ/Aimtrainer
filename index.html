@@ -5,29 +5,38 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AimTrainer.gg | Elite Aim Training</title>
     <link rel="stylesheet" href="main.css">
-    
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=JetBrains+Mono:wght@700&display=swap" rel="stylesheet">
-    
 </head>
 <body class="hub-body">
-    
     <div class="hub-container">
         <header class="hub-header">
             <h1 class="glitch" data-text="AIMTRAINER.GG">AIMTRAINER.GG</h1>
-            <p>Master your mechanics.</p>
+            <p>Master your mechanics. Design your arena.</p>
         </header>
         
         <main class="mode-selection">
-            <a href="2d.html" class="mode-card">
-                <div class="mode-icon">2D</div>
+            <a href="2d.html?mode=grid" class="mode-card">
+                <div class="mode-icon">2D GRID</div>
                 <h2>2D Reflex & Grid</h2>
                 <p>Warm up your wrists. Targets spawn in a fixed 8x8 possibility box on a 2D canvas.</p>
+            </a>
+
+            <a href="2d.html?mode=tracking" class="mode-card">
+                <div class="mode-icon">2D TRACK</div>
+                <h2>2D Tracking</h2>
+                <p>Smooth 2D tracking. Keep your crosshair locked onto the moving target.</p>
             </a>
             
             <a href="3d.html?mode=grid" class="mode-card">
                 <div class="mode-icon">3D GRID</div>
                 <h2>3D Gridshot</h2>
-                <p>Standard 3D environment. Targets spawn on a tight, fixed 8x8 wall grid in front of you.</p>
+                <p>Standard 3D environment. Targets spawn on a custom 8x8 wall grid in front of you.</p>
+            </a>
+
+            <a href="3d.html?mode=tracking" class="mode-card">
+                <div class="mode-icon">3D TRACK</div>
+                <h2>3D Tracking</h2>
+                <p>Smooth 3D tracking. Follow the erratic target as it bounces inside the arena.</p>
             </a>
 
             <a href="3d.html?mode=360" class="mode-card">
@@ -38,11 +47,10 @@
         </main>
         
         <div class="hub-footer">
-             <button id="open-settings-hub" class="btn primary-btn">Configure Settings</button>
+             <button id="open-settings-hub" class="btn primary-btn">Configure Level & Settings</button>
         </div>
     </div>
 
-    
     <!-- Shared Settings Modal -->
     <div id="settings-overlay" class="modal-overlay hidden">
         <div class="modal-content settings-modal">
@@ -55,6 +63,7 @@
                 <button class="tab-btn active" data-tab="sens">Mouse</button>
                 <button class="tab-btn" data-tab="crosshair">Crosshair</button>
                 <button class="tab-btn" data-tab="target">Target Design</button>
+                <button class="tab-btn" data-tab="arena">Level / Arena</button>
                 <button class="tab-btn" data-tab="display">Display</button>
                 <button class="tab-btn" data-tab="audio">Audio</button>
             </div>
@@ -135,13 +144,37 @@
                     <div class="setting-group">
                         <label>Target Size (%)</label>
                         <div class="slider-group">
-                            <input type="range" id="target-size" min="50" max="150" value="100">
+                            <input type="range" id="target-size" min="30" max="150" value="100">
                             <span id="target-size-display">100%</span>
                         </div>
                     </div>
                     <div class="setting-group checkbox-group">
                         <input type="checkbox" id="show-target-hitboxes">
                         <label for="show-target-hitboxes">Show Hitboxes (Red Outline)</label>
+                    </div>
+                </div>
+
+                <!-- Arena Level Designer Tab -->
+                <div id="tab-arena" class="tab-pane">
+                    <div class="setting-group">
+                        <label>Possibox Size / Scale (%)</label>
+                        <div class="slider-group">
+                            <input type="range" id="arena-scale" min="40" max="150" value="100">
+                            <span id="arena-scale-display">100%</span>
+                        </div>
+                        <p style="font-size: 0.8rem; color: #888; margin-top: 5px;">Scales the 8x8 spawning grid bounds (2D & 3D).</p>
+                    </div>
+                    <div class="setting-group">
+                        <label>Target Distance (3D Only)</label>
+                        <div class="slider-group">
+                            <input type="range" id="arena-dist" min="10" max="50" value="20">
+                            <span id="arena-dist-display">20m</span>
+                        </div>
+                        <p style="font-size: 0.8rem; color: #888; margin-top: 5px;">How far away the spawning wall is pushed.</p>
+                    </div>
+                    <div class="setting-group checkbox-group">
+                        <input type="checkbox" id="show-gun" checked>
+                        <label for="show-gun">Show 3D Gun Model</label>
                     </div>
                 </div>
                 
@@ -179,8 +212,7 @@
             </div>
         </div>
     </div>
-    
-    
+
     <script src="settings.js"></script>
     <script src="sound.js"></script>
     <script>
@@ -192,6 +224,5 @@
             window.SettingsManager.saveSettings();
         });
     </script>
-
 </body>
 </html>
