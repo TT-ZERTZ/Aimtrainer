@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Level Editor - AimTrainer.gg</title>
+    <link rel="stylesheet" href="main.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=JetBrains+Mono:wght@700&display=swap" rel="stylesheet">
+    <style>
+        .editor-container { max-width: 900px; width: 95%; margin: 40px auto; background: var(--bg-panel); border: 1px solid #333; border-radius: 12px; padding: 30px; text-align: left; }
+        .editor-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #333; padding-bottom: 15px; margin-bottom: 20px; }
+        .editor-header h1 { font-family: 'JetBrains Mono', monospace; color: var(--accent-cyan); font-size: 1.8rem; }
+        .mode-toggle-group { display: flex; gap: 10px; margin-bottom: 20px; }
+        .mode-toggle-btn { flex: 1; padding: 12px; background: #222; border: 1px solid #444; color: var(--text-muted); font-weight: bold; border-radius: 6px; cursor: pointer; }
+        .mode-toggle-btn.active { background: var(--accent-cyan); color: #000; border-color: var(--accent-cyan); }
+        .grid-editor-box { display: grid; grid-template-columns: repeat(8, 1fr); gap: 8px; max-width: 400px; margin: 20px auto; background: #111; padding: 15px; border-radius: 8px; border: 1px solid #333; }
+        .grid-cell { aspect-ratio: 1; background: #222; border: 1px solid #444; border-radius: 4px; cursor: pointer; transition: 0.1s; }
+        .grid-cell.active { background: var(--accent-cyan); box-shadow: 0 0 10px rgba(0,240,255,0.5); }
+        .code-output-box { margin-top: 25px; background: #111; padding: 15px; border-radius: 8px; border: 1px solid #333; }
+        .code-output-box textarea { width: 100%; height: 80px; background: #1a1b26; border: 1px solid #444; color: var(--accent-cyan); font-family: monospace; padding: 10px; border-radius: 4px; resize: none; margin-top: 8px; }
+    </style>
+</head>
+<body class="hub-body" style="align-items: stretch; justify-content: flex-start; overflow-y: auto;">
+    <div class="editor-container">
+        <div class="editor-header">
+            <h1>🛠️ LEVEL EDITOR</h1>
+            <a href="index.html" class="btn secondary-btn">Back to Hub</a>
+        </div>
+
+        <div class="mode-toggle-group">
+            <button class="mode-toggle-btn active" id="btn-mode-grid" data-editor="grid">Gridshot Target Placement</button>
+            <button class="mode-toggle-btn" id="btn-mode-popcorn" data-editor="popcorn">Popcorn Physics & Launch</button>
+        </div>
+
+        <!-- Grid Editor Pane -->
+        <div id="editor-pane-grid" class="editor-pane">
+            <p style="color: var(--text-muted); text-align: center;">Click cells on the 8x8 grid to enable or disable valid target spawn locations for Gridshot!</p>
+            <div class="grid-editor-box" id="grid-canvas-editor"></div>
+        </div>
+
+        <!-- Popcorn Editor Pane -->
+        <div id="editor-pane-popcorn" class="editor-pane" style="display: none;">
+            <p style="color: var(--text-muted); margin-bottom: 20px;">Configure initial upward velocity (speed) and horizontal launch angle dispersion for Popcorn mode.</p>
+            <div class="setting-group">
+                <label>Initial Upward Pop Speed: <span id="val-speed" style="color:var(--accent-cyan)">600</span></label>
+                <input type="range" id="edit-pop-speed" min="300" max="1000" step="50" value="600">
+            </div>
+            <div class="setting-group">
+                <label>Horizontal Spread / Angle Spread: <span id="val-spread" style="color:var(--accent-cyan)">400</span></label>
+                <input type="range" id="edit-pop-spread" min="100" max="800" step="50" value="400">
+            </div>
+            <div class="setting-group">
+                <label>Gravity / Fall Force: <span id="val-gravity" style="color:var(--accent-cyan)">1200</span></label>
+                <input type="range" id="edit-pop-gravity" min="500" max="2500" step="100" value="1200">
+            </div>
+            <div class="setting-group">
+                <label>Number of Active Poppers: <span id="val-count" style="color:var(--accent-cyan)">4</span></label>
+                <input type="range" id="edit-pop-count" min="1" max="8" value="4">
+            </div>
+        </div>
+
+        <!-- Code Export / Import -->
+        <div class="code-output-box">
+            <label style="font-weight: bold; color: white;">Generated Level Code (Base64 JSON)</label>
+            <textarea id="editor-code-output" readonly></textarea>
+            <div class="btn-group" style="margin-top: 10px;">
+                <button id="editor-copy-btn" class="btn primary-btn">Copy Level Code</button>
+                <button id="editor-play-btn" class="btn secondary-btn" style="border-color: var(--accent-cyan); color: var(--accent-cyan);">Test Play Level</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="settings.js"></script>
+    <script>
+        const gridBox = document.getElementById('grid-canvas-editor');
+        let gridState = Array(64).fill(true);
+        
+        function renderGridCells() {
+            gridBox.innerHTML = '';
+            for(let i=0; i<64; i++) {
+                const cell = document.createElement('div');
+                cell.className = 'grid-cell' + (gridState[i] ? ' active' : '');
+                cell.dataset.index = i;
+                cell.addEventListener('click', () => {
+                    gridState[i] = !gridState[i];
+                    cell.classList.toggle('active', gridState[i]);
+                    updateLevelCode();
+                });
+                gridBox.appendChild(cell);
+            }
+        }
+        renderGridCells();
+
+        document.querySelectorAll('.mode-toggle-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                document.querySelectorAll('.mode-toggle-btn').forEach(b => b.classList.remove('active'));
+                e.target.classList.add('active');
+                const isGrid = e.target.dataset.editor === 'grid';
+                document.getElementById('editor-pane-grid').style.display = isGrid ? 'block' : 'none';
+                document.getElementById('editor-pane-popcorn').style.display = isGrid ? 'none' : 'block';
+                window.EditorMode = e.target.dataset.editor;
+                updateLevelCode();
+            });
+        });
+
+        window.EditorMode = 'grid';
+
+        ['speed', 'spread', 'gravity', 'count'].forEach(key => {
+            const slider = document.getElementById(`edit-pop-${key}`);
+            const display = document.getElementById(`val-${key}`);
+            if(slider) {
+                slider.addEventListener('input', e => {
+                    display.innerText = e.target.value;
+                    updateLevelCode();
+                });
+            }
+        });
+
+        function updateLevelCode() {
+            const settings = window.SettingsManager.current;
+            const customLevel = {
+                ...settings,
+                editorMode: window.EditorMode,
+                gridSpawns: gridState,
+                popcorn: {
+                    speed: parseInt(document.getElementById('edit-pop-speed').value),
+                    spread: parseInt(document.getElementById('edit-pop-spread').value),
+                    gravity: parseInt(document.getElementById('edit-pop-gravity').value),
+                    count: parseInt(document.getElementById('edit-pop-count').value)
+                }
+            };
+            const jsonStr = JSON.stringify(customLevel);
+            const b64 = btoa(jsonStr);
+            document.getElementById('editor-code-output').value = b64;
+        }
+
+        document.getElementById('editor-copy-btn').addEventListener('click', () => {
+            const ta = document.getElementById('editor-code-output');
+            ta.select();
+            navigator.clipboard.writeText(ta.value);
+            const btn = document.getElementById('editor-copy-btn');
+            btn.innerText = 'Copied Code!';
+            setTimeout(() => btn.innerText = 'Copy Level Code', 1500);
+        });
+
+        document.getElementById('editor-play-btn').addEventListener('click', () => {
+            const ta = document.getElementById('editor-code-output').value;
+            if(window.SettingsManager.importLevelCode(ta)) {
+                alert('Level applied! Redirecting to game...');
+                const mode = window.EditorMode === 'grid' ? 'grid' : 'tracking';
+                window.location.href = `3d.html?mode=${mode}`;
+            }
+        });
+
+        updateLevelCode();
+    </script>
+</body>
+</html>
