@@ -1,4 +1,3 @@
-
 let scene, camera, renderer, raycaster;
 let targets = [];
 let targetMaterial = null; 
@@ -14,7 +13,7 @@ let isHolding = false;
 
 const urlParams = new URLSearchParams(window.location.search);
 const mode = urlParams.get('mode') || 'grid'; 
-const MAX_TARGETS = mode === 'tracking' ? 1 : 3;
+const MAX_TARGETS = mode === 'tracking' ? 4 : 3;
 
 const uiScore = document.getElementById('score-display');
 const uiTime = document.getElementById('time-display');
@@ -24,7 +23,7 @@ const titleEl = document.getElementById('pause-title');
 
 if (titleEl) { 
     if(mode === '360') titleEl.innerText = '3D 360° Flick Ready';
-    else if(mode === 'tracking') titleEl.innerText = '3D Tracking Ready';
+    else if(mode === 'tracking') titleEl.innerText = '3D Popcorn Tracking Ready';
     else titleEl.innerText = '3D Gridshot Ready'; 
 }
 
@@ -194,22 +193,26 @@ function spawnTarget3D() {
         mesh.add(line);
     }
     
-    mesh.vx = 0; mesh.vy = 0; mesh.timer = 0; // tracking vars
+    const wallDist = arenaSet.distance;
+    const spacing = 2.4 * (arenaSet.scale / 100);
+    const halfXY = spacing * 4;
 
-    if (mode === '360') {
-        const dist = arenaSet.distance;
+    if (mode === 'tracking') {
+        mesh.position.set((Math.random() - 0.5) * halfXY, 5 - halfXY*0.5, -wallDist);
+        mesh.vx = (Math.random() - 0.5) * 12;
+        mesh.vy = 12 + Math.random() * 10;
+        mesh.vz = 0;
+    } else if (mode === '360') {
+        const dist = wallDist;
         const angleX = Math.random() * Math.PI * 2; 
         const angleY = (Math.random() - 0.2) * Math.PI * 0.5; 
-        
         mesh.position.x = Math.sin(angleX) * dist;
         mesh.position.y = 5 + Math.sin(angleY) * dist;
         mesh.position.z = -Math.cos(angleX) * dist;
+        mesh.vx = 0; mesh.vy = 0; mesh.vz = 0;
         if (ts.shape === 'square') mesh.lookAt(camera.position); 
     } else {
         const cols = 8; const rows = 8;
-        const spacing = 2.4 * (arenaSet.scale / 100); 
-        const wallDist = arenaSet.distance; 
-        
         let validSpot = false; let col = 0, row = 0; let attempts = 0;
         while(!validSpot && attempts < 50) {
             col = Math.floor(Math.random() * cols); row = Math.floor(Math.random() * rows);
@@ -220,11 +223,11 @@ function spawnTarget3D() {
             }
             attempts++;
         }
-        
         mesh.position.x = (col - 3.5) * spacing;
         mesh.position.y = 5 + (row - 3.5) * spacing; 
         mesh.position.z = -wallDist;
         mesh.rotation.set(0, 0, 0); 
+        mesh.vx = 0; mesh.vy = 0; mesh.vz = 0;
     }
 
     scene.add(mesh);
@@ -259,42 +262,52 @@ function animate() {
         if (timeLeft <= 0) { timeLeft = 0; endGame3D(); }
         uiTime.innerText = timeLeft.toFixed(1);
 
-        // Tracking Mode Logic
-        if (mode === 'tracking' && targets.length > 0) {
-            let t = targets[0];
-            t.timer -= dt;
-            if(t.timer <= 0) {
-                 t.vx = (Math.random() - 0.5) * 20 * (window.SettingsManager.current.arena.scale/100); 
-                 t.vy = (Math.random() - 0.5) * 20 * (window.SettingsManager.current.arena.scale/100);
-                 t.timer = 0.3 + Math.random() * 0.5;
-            }
-            t.position.x += t.vx * dt; t.position.y += t.vy * dt;
-
-            const spacing = 2.4 * (window.SettingsManager.current.arena.scale/100);
+        if (mode === 'tracking') {
+            const arenaSet = window.SettingsManager.current.arena;
+            const gravity = arenaSet.gravity / 50; 
+            const spacing = 2.4 * (arenaSet.scale / 100);
             const halfXY = spacing * 4;
+            const wallDist = arenaSet.distance;
 
-            if (t.position.x > halfXY) { t.position.x = halfXY; t.vx *= -1; }
-            if (t.position.x < -halfXY) { t.position.x = -halfXY; t.vx *= -1; }
-            if (t.position.y > 5 + halfXY) { t.position.y = 5 + halfXY; t.vy *= -1; }
-            if (t.position.y < 5 - halfXY) { t.position.y = 5 - halfXY; t.vy *= -1; }
+            let anyHit = false;
+            targets.forEach(t => {
+                t.vy -= gravity * dt;
+                t.position.x += t.vx * dt;
+                t.position.y += t.vy * dt;
+
+                if (t.position.x > halfXY) { t.position.x = halfXY; t.vx *= -0.85; }
+                if (t.position.x < -halfXY) { t.position.x = -halfXY; t.vx *= -0.85; }
+                if (t.position.y > 5 + halfXY) { t.position.y = 5 + halfXY; t.vy *= -0.85; }
+                if (t.position.y < 5 - halfXY) {
+                    t.position.y = 5 - halfXY;
+                    t.vy = Math.abs(t.vy) * 0.85 + (6 + Math.random() * 6);
+                    t.vx += (Math.random() - 0.5) * 8;
+                }
+                t.position.z = -wallDist;
+            });
 
             if(isHolding) {
                 raycaster.setFromCamera(new THREE.Vector2(0, 0), camera);
-                const intersects = raycaster.intersectObjects([t]);
+                const intersects = raycaster.intersectObjects(targets);
                 let hitObj = intersects.length > 0 ? intersects[0].object : null;
                 if(hitObj && hitObj.type === 'LineSegments') hitObj = hitObj.parent;
 
-                if(hitObj === t) {
-                    score += Math.round(500 * dt); hits++; // tracking hit frames
-                    t.material = getTargetMaterial(window.SettingsManager.current.target, true);
-                    if(gunGroup && Math.random() > 0.8) triggerRecoil(); // simulate continuous fire
+                if(hitObj) {
+                    score += Math.round(500 * dt); hits++;
+                    hitObj.material = getTargetMaterial(window.SettingsManager.current.target, true);
+                    if(gunGroup && Math.random() > 0.8) triggerRecoil();
+                    anyHit = true;
                 } else {
                     misses++;
+                }
+            }
+            
+            targets.forEach(t => {
+                if(!isHolding || t.material.emissive.getHex() !== 0x444444) {
                     t.material = targetMaterial;
                 }
-            } else {
-                t.material = targetMaterial;
-            }
+            });
+
             updateStatsUI();
         }
     }
