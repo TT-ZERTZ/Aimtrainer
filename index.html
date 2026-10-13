@@ -11,8 +11,14 @@
     <div class="hub-container">
         <header class="hub-header">
             <h1 class="glitch" data-text="AIMTRAINER.GG">AIMTRAINER.GG</h1>
-            <p>Master your mechanics. Design your arena.</p>
+            <p>Master your mechanics. Design & Share Custom Levels.</p>
         </header>
+
+        <!-- Hub Level Code Import Box -->
+        <div class="hub-import-box">
+            <input type="text" id="hub-level-code" placeholder="Paste Level Code (Base64 JSON)...">
+            <button id="hub-load-code-btn" class="btn primary-btn">Play Custom Code</button>
+        </div>
         
         <main class="mode-selection">
             <a href="2d.html?mode=grid" class="mode-card">
@@ -22,9 +28,9 @@
             </a>
 
             <a href="2d.html?mode=tracking" class="mode-card">
-                <div class="mode-icon">2D TRACK</div>
-                <h2>2D Tracking</h2>
-                <p>Smooth 2D tracking. Keep your crosshair locked onto the moving target.</p>
+                <div class="mode-icon">2D POPCORN</div>
+                <h2>2D Popcorn Tracking</h2>
+                <p>Multiple targets popping and bouncing with gravity like popcorn poppers.</p>
             </a>
             
             <a href="3d.html?mode=grid" class="mode-card">
@@ -34,9 +40,9 @@
             </a>
 
             <a href="3d.html?mode=tracking" class="mode-card">
-                <div class="mode-icon">3D TRACK</div>
-                <h2>3D Tracking</h2>
-                <p>Smooth 3D tracking. Follow the erratic target as it bounces inside the arena.</p>
+                <div class="mode-icon">3D POPCORN</div>
+                <h2>3D Popcorn Tracking</h2>
+                <p>Classic 3D popcorn tracking drill with bouncing spheres and gun recoil.</p>
             </a>
 
             <a href="3d.html?mode=360" class="mode-card">
@@ -47,7 +53,7 @@
         </main>
         
         <div class="hub-footer">
-             <button id="open-settings-hub" class="btn primary-btn">Configure Level & Settings</button>
+             <button id="open-settings-hub" class="btn primary-btn">Settings & Level Coder</button>
         </div>
     </div>
 
@@ -55,7 +61,7 @@
     <div id="settings-overlay" class="modal-overlay hidden">
         <div class="modal-content settings-modal">
             <div class="modal-header">
-                <h2>Game Settings</h2>
+                <h2>Game Settings & Level Designer</h2>
                 <button id="close-settings" class="close-btn">&times;</button>
             </div>
             
@@ -63,7 +69,8 @@
                 <button class="tab-btn active" data-tab="sens">Mouse</button>
                 <button class="tab-btn" data-tab="crosshair">Crosshair</button>
                 <button class="tab-btn" data-tab="target">Target Design</button>
-                <button class="tab-btn" data-tab="arena">Level / Arena</button>
+                <button class="tab-btn" data-tab="arena">Arena / Physics</button>
+                <button class="tab-btn" data-tab="designer">Level Coder</button>
                 <button class="tab-btn" data-tab="display">Display</button>
                 <button class="tab-btn" data-tab="audio">Audio</button>
             </div>
@@ -77,15 +84,6 @@
                             <input type="range" id="sens-slider" min="0.1" max="5.0" step="0.01" value="1.0">
                             <input type="number" id="sens-input" min="0.1" max="10.0" step="0.01" value="1.0">
                         </div>
-                    </div>
-                    <div class="setting-group">
-                        <label>Game Conversion Preset</label>
-                        <select id="sens-preset">
-                            <option value="raw">Raw Input</option>
-                            <option value="valorant">Valorant (Sens * 1.0)</option>
-                            <option value="cs2">CS2 / Apex (Sens * 3.18)</option>
-                            <option value="overwatch">Overwatch 2 (Sens * 10.60)</option>
-                        </select>
                     </div>
                 </div>
                 
@@ -162,7 +160,6 @@
                             <input type="range" id="arena-scale" min="40" max="150" value="100">
                             <span id="arena-scale-display">100%</span>
                         </div>
-                        <p style="font-size: 0.8rem; color: #888; margin-top: 5px;">Scales the 8x8 spawning grid bounds (2D & 3D).</p>
                     </div>
                     <div class="setting-group">
                         <label>Target Distance (3D Only)</label>
@@ -170,11 +167,35 @@
                             <input type="range" id="arena-dist" min="10" max="50" value="20">
                             <span id="arena-dist-display">20m</span>
                         </div>
-                        <p style="font-size: 0.8rem; color: #888; margin-top: 5px;">How far away the spawning wall is pushed.</p>
+                    </div>
+                    <div class="setting-group">
+                        <label>Gravity / Popcorn Bounce Force</label>
+                        <div class="slider-group">
+                            <input type="range" id="arena-gravity" min="500" max="2500" step="100" value="1200">
+                            <span id="arena-gravity-display">1200</span>
+                        </div>
                     </div>
                     <div class="setting-group checkbox-group">
                         <input type="checkbox" id="show-gun" checked>
                         <label for="show-gun">Show 3D Gun Model</label>
+                    </div>
+                </div>
+
+                <!-- Level Coder Tab -->
+                <div id="tab-designer" class="tab-pane">
+                    <div class="setting-group">
+                        <label>Export Custom Level Code (Base64 JSON)</label>
+                        <div style="display: flex; gap: 10px;">
+                            <input type="text" id="export-code-input" readonly style="flex: 1; padding: 8px; background: #222; border: 1px solid #444; color: #00f0ff; font-family: monospace; border-radius: 4px;">
+                            <button id="copy-code-btn" class="btn primary-btn" style="padding: 8px 15px;">Copy</button>
+                        </div>
+                        <p style="font-size: 0.8rem; color: #888; margin-top: 5px;">Share this code with friends so they can play your exact level setup!</p>
+                    </div>
+                    <hr style="border: 1px solid #333; margin: 20px 0;">
+                    <div class="setting-group">
+                        <label>Import Level Code (Paste Base64 JSON)</label>
+                        <textarea id="import-code-input" placeholder="Paste Base64 level code here..." style="width: 100%; height: 70px; padding: 8px; background: #222; border: 1px solid #444; color: white; font-family: monospace; border-radius: 4px; resize: none;"></textarea>
+                        <button id="load-code-btn" class="btn primary-btn" style="margin-top: 10px; width: 100%;">Load & Play Level Code</button>
                     </div>
                 </div>
                 
@@ -207,7 +228,6 @@
                         <label>Hit Sound (Ding)</label>
                         <input type="range" id="vol-hit" min="0" max="100" value="80">
                     </div>
-                    <button id="test-hit-sound" class="btn secondary-btn">Test Hit Sound</button>
                 </div>
             </div>
         </div>
@@ -218,10 +238,22 @@
     <script>
         document.getElementById('open-settings-hub').addEventListener('click', () => {
             document.getElementById('settings-overlay').classList.remove('hidden');
+            window.SettingsManager.updateExportCode();
         });
         document.getElementById('close-settings').addEventListener('click', () => {
             document.getElementById('settings-overlay').classList.add('hidden');
             window.SettingsManager.saveSettings();
+        });
+        document.getElementById('hub-load-code-btn').addEventListener('click', () => {
+            const code = document.getElementById('hub-level-code').value.trim();
+            if(code) {
+                if(window.SettingsManager.importLevelCode(code)) {
+                    alert('Level loaded successfully! Redirecting to 3D Grid...');
+                    window.location.href = '3d.html?mode=grid';
+                } else {
+                    alert('Invalid level code!');
+                }
+            }
         });
     </script>
 </body>
