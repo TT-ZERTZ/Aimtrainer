@@ -11,7 +11,7 @@ let isPlaying = false;
 
 // Determine Mode
 const urlParams = new URLSearchParams(window.location.search);
-const mode = urlParams.get('mode') || 'area'; 
+const mode = urlParams.get('mode') || 'grid'; 
 
 const uiScore = document.getElementById('score-display');
 const uiTime = document.getElementById('time-display');
@@ -20,7 +20,7 @@ const hitmarker = document.getElementById('hitmarker');
 const titleEl = document.getElementById('pause-title');
 
 if (titleEl) {
-    titleEl.innerText = mode === '360' ? '3D 360° Flick Ready' : '3D Area Flick Ready';
+    titleEl.innerText = mode === '360' ? '3D 360° Flick Ready' : '3D Gridshot Ready';
 }
 
 let isLocked = false;
@@ -121,22 +121,56 @@ function spawnTarget3D() {
         mesh.add(line);
     }
     
-    const dist = 15 + Math.random() * 20;
-    let angleX, angleY;
-    
     if (mode === '360') {
         // Spawn 360 degrees around the player
-        angleX = Math.random() * Math.PI * 2; 
-        angleY = (Math.random() - 0.2) * Math.PI * 0.5; // Wider vertical range
+        const dist = 15 + Math.random() * 20;
+        const angleX = Math.random() * Math.PI * 2; 
+        const angleY = (Math.random() - 0.2) * Math.PI * 0.5; // Wider vertical range
+        
+        mesh.position.x = Math.sin(angleX) * dist;
+        mesh.position.y = 5 + Math.sin(angleY) * dist;
+        mesh.position.z = -Math.cos(angleX) * dist;
+        
+        if (shape === 'square') {
+            mesh.lookAt(camera.position); // Cubes look better pointing at player in 360
+        }
     } else {
-        // Spawn strictly in front cone
-        angleX = (Math.random() - 0.5) * Math.PI * 0.6; 
-        angleY = (Math.random() - 0.2) * Math.PI * 0.3;
+        // True 8x8 Grid Mode (64 fixed positions) like SteelSeries 3D Aim Trainer
+        const cols = 8;
+        const rows = 8;
+        const spacing = 3.5; 
+        const wallDist = 25; 
+        
+        let validSpot = false;
+        let col = 0, row = 0;
+        let attempts = 0;
+        
+        // Find an empty spot on the grid
+        while(!validSpot && attempts < 50) {
+            col = Math.floor(Math.random() * cols);
+            row = Math.floor(Math.random() * rows);
+            validSpot = true;
+            
+            const testX = (col - 3.5) * spacing;
+            const testY = 3.5 + row * spacing;
+            
+            for(let t of targets) {
+                if (Math.abs(t.position.x - testX) < 0.1 && Math.abs(t.position.y - testY) < 0.1) {
+                    validSpot = false; 
+                    break;
+                }
+            }
+            attempts++;
+        }
+        
+        mesh.position.x = (col - 3.5) * spacing;
+        // Floor is at y=0, eye level is y=5. Starting at 3.5 keeps bottom row off the floor.
+        mesh.position.y = 3.5 + row * spacing; 
+        mesh.position.z = -wallDist;
+        
+        // Force square to be perfectly flat against the invisible wall
+        mesh.rotation.set(0, 0, 0); 
     }
-    
-    mesh.position.x = Math.sin(angleX) * dist;
-    mesh.position.y = 5 + Math.sin(angleY) * dist;
-    mesh.position.z = -Math.cos(angleX) * dist;
 
     scene.add(mesh);
     targets.push(mesh);
