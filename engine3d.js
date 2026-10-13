@@ -9,10 +9,19 @@ let timeLeft = 60.0;
 let lastTime = performance.now();
 let isPlaying = false;
 
+// Determine Mode
+const urlParams = new URLSearchParams(window.location.search);
+const mode = urlParams.get('mode') || 'area'; 
+
 const uiScore = document.getElementById('score-display');
 const uiTime = document.getElementById('time-display');
 const uiAcc = document.getElementById('acc-display');
 const hitmarker = document.getElementById('hitmarker');
+const titleEl = document.getElementById('pause-title');
+
+if (titleEl) {
+    titleEl.innerText = mode === '360' ? '3D 360° Flick Ready' : '3D Area Flick Ready';
+}
 
 let isLocked = false;
 document.addEventListener('pointerlockchange', () => {
@@ -62,7 +71,6 @@ function init3D() {
         const intersects = raycaster.intersectObjects(targets);
         
         if (intersects.length > 0) {
-            // Because hitbox edges might be children, we need to trace back to parent mesh
             let hitObj = intersects[0].object;
             if(hitObj.type === 'LineSegments') hitObj = hitObj.parent;
             
@@ -84,7 +92,6 @@ function init3D() {
         camera.fov = e.detail.fov;
         camera.updateProjectionMatrix();
         
-        // Re-render targets instantly to apply shape changes
         if (isPlaying || timeLeft > 0) {
             targets.forEach(t => scene.remove(t));
             targets = [];
@@ -108,7 +115,6 @@ function spawnTarget3D() {
     const mesh = new THREE.Mesh(geometry, material);
     
     if (showHitboxes) {
-        // Create an outer red bounding box skeleton to show hitbox
         const hbGeo = new THREE.BoxGeometry(TARGET_RADIUS*2.1, TARGET_RADIUS*2.1, TARGET_RADIUS*2.1);
         const edges = new THREE.EdgesGeometry(hbGeo);
         const line = new THREE.LineSegments(edges, new THREE.LineBasicMaterial({ color: 0xff0000 }));
@@ -116,8 +122,17 @@ function spawnTarget3D() {
     }
     
     const dist = 15 + Math.random() * 20;
-    const angleX = (Math.random() - 0.5) * Math.PI * 0.6;
-    const angleY = (Math.random() - 0.2) * Math.PI * 0.3;
+    let angleX, angleY;
+    
+    if (mode === '360') {
+        // Spawn 360 degrees around the player
+        angleX = Math.random() * Math.PI * 2; 
+        angleY = (Math.random() - 0.2) * Math.PI * 0.5; // Wider vertical range
+    } else {
+        // Spawn strictly in front cone
+        angleX = (Math.random() - 0.5) * Math.PI * 0.6; 
+        angleY = (Math.random() - 0.2) * Math.PI * 0.3;
+    }
     
     mesh.position.x = Math.sin(angleX) * dist;
     mesh.position.y = 5 + Math.sin(angleY) * dist;
